@@ -34,13 +34,11 @@
         const { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip: RechartsTooltip, ResponsiveContainer } = window.Recharts;
 
         // --- ICON COMPONENTS ---
-        const IconUpload = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>;
         const IconDashboard = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>;
         const IconBook = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>;
         const IconUsers = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>;
         const IconSearch = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>;
         const IconGraduation = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>;
-        const IconRefresh = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>;
 
         const SUBJECTS = ['Toán', 'Văn', 'Anh', 'Lý', 'Hóa', 'Sinh', 'Sử', 'Địa', 'KTPL', 'Tin', 'CN (NN)', 'CN (CN)', 'TO', 'VA', 'LI', 'HO', 'SI', 'SU', 'DI'];
 
@@ -533,7 +531,7 @@
               
               setData(rawData);
             } catch (err) {
-              setError("Lỗi tự động tải file: " + err.message + " --- Vui lòng chắc chắn bạn đã đặt tên file là data.xlsx và đang chạy trang web này qua môi trường Local Server (như Live Server).");
+              setError("Lỗi tự động tải file: " + err.message + " --- Vui lòng chắc chắn bạn đã đặt tên file là data.xlsx và đã đẩy lên GitHub thành công.");
             }
             setLoading(false);
           };
@@ -542,29 +540,6 @@
           useEffect(() => {
             loadAutoFile();
           }, []);
-
-          // Giữ lại nút upload thủ công để đề phòng server lỗi người dùng vẫn có thể chọn file bằng tay
-          const handleFileUpload = (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            setLoading(true);
-            const reader = new FileReader();
-            reader.onload = (evt) => {
-              try {
-                const bstr = evt.target.result;
-                const wb = XLSX.read(bstr, {type:'binary'});
-                const wsname = wb.SheetNames[0];
-                const ws = wb.Sheets[wsname];
-                const rawData = XLSX.utils.sheet_to_json(ws);
-                setData(rawData);
-                setError(null);
-              } catch(err) {
-                setError('Lỗi đọc file Excel. Vui lòng kiểm tra lại định dạng!');
-              }
-              setLoading(false);
-            };
-            reader.readAsBinaryString(file);
-          };
           
           return (
             <div className="flex h-screen bg-gray-50 font-sans">
@@ -592,15 +567,6 @@
                         {activeTab === 'search' && 'Tra Cứu Kết Quả Học Sinh'}
                         {activeTab === 'graduation' && 'Hệ Thống Tính Điểm Xét Tốt Nghiệp'}
                      </h2>
-                     <div className="flex gap-3">
-                        <button onClick={loadAutoFile} className="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-4 py-2.5 rounded-xl font-medium transition-colors shadow-sm flex items-center gap-2">
-                          <IconRefresh /> <span>Tải lại data.xlsx</span>
-                        </button>
-                        <label className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl cursor-pointer font-medium transition-colors shadow-sm flex items-center gap-2">
-                          <IconUpload /> <span>Hoặc Tải File Thủ Công</span>
-                          <input type="file" className="hidden" accept=".xlsx, .xls" onChange={handleFileUpload} />
-                        </label>
-                     </div>
                   </header>
                   
                   <div className="flex-1 overflow-auto p-6 bg-slate-50/50">
@@ -615,7 +581,7 @@
                           <div className="font-bold text-xl mb-4">LỖI TẢI FILE TỰ ĐỘNG</div>
                           <p>{error}</p>
                           <br/>
-                          <p className="text-sm font-normal"><b>Gợi ý khắc phục:</b> Đảm bảo bạn đã lưu file Excel tên là <b>data.xlsx</b> cùng thư mục với file HTML này. Chức năng tự động tải yêu cầu bạn phải chạy trang web bằng Local Server (như Live Server trên VS Code) thay vì click đúp trực tiếp.</p>
+                          <p className="text-sm font-normal"><b>Gợi ý khắc phục:</b> Đảm bảo bạn đã tải file Excel tên là <b>data.xlsx</b> lên kho lưu trữ GitHub cùng với file index.html này.</p>
                         </div>
                      )}
 
